@@ -57,7 +57,7 @@ func GetAccountGain(db *gorm.DB, account string) gin.H {
 	var portfolio_groups PortfolioAllocationGroups
 	portfolio_groups = GetAccountPortfolioAllocation(db, account)
 	if !(len(commodities) > 0 && len(portfolio_groups.Commomdities) == len(commodities)) {
-		portfolio_groups = PortfolioAllocationGroups{Commomdities: []string{}, NameAndSecurityType: []PortfolioAggregate{}, SecurityType: []PortfolioAggregate{}, Rating: []PortfolioAggregate{}, Industry: []PortfolioAggregate{}}
+		// portfolio_groups = PortfolioAllocationGroups{Commomdities: []string{}, NameAndSecurityType: []PortfolioAggregate{}, SecurityType: []PortfolioAggregate{}, Rating: []PortfolioAggregate{}, Industry: []PortfolioAggregate{}, Country: []PortfolioAggregate{}}
 	}
 
 	assetBreakdown := assets.ComputeBreakdown(db, postings, false, account)

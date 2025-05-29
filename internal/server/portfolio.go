@@ -34,6 +34,7 @@ type CommodityBreakdown struct {
 	SecurityName      string          `json:"security_name"`
 	SecurityRating    string          `json:"security_rating"`
 	SecurityIndustry  string          `json:"security_industry"`
+	SecurityCountry   string          `json:"security_country"`
 	Percentage        decimal.Decimal `json:"percentage"`
 	SecurityID        string          `json:"security_id"`
 	SecurityType      string          `json:"security_type"`
@@ -55,6 +56,7 @@ type PortfolioAllocationGroups struct {
 	SecurityType        []PortfolioAggregate `json:"security_type"`
 	Rating              []PortfolioAggregate `json:"rating"`
 	Industry            []PortfolioAggregate `json:"industry"`
+	Country             []PortfolioAggregate `json:"country"`
 }
 
 func GetPortfolioAllocation(db *gorm.DB) gin.H {
@@ -65,6 +67,7 @@ func GetPortfolioAllocation(db *gorm.DB) gin.H {
 		"security_type":          groups.SecurityType,
 		"rating":                 groups.Rating,
 		"industry":               groups.Industry,
+		"country":                groups.Country,
 	}
 }
 
@@ -115,7 +118,7 @@ func GetAccountPortfolioAllocation(db *gorm.DB, account string) PortfolioAllocat
 			}}, cbs),
 		Rating: rollupPortfolioAggregate(PortfolioDimension{
 			FilterFn: func(c CommodityBreakdown, _ int) bool {
-				return c.SecurityType == "debt"
+				return true // c.SecurityType == "debt"
 			},
 			Group: "Rating",
 			GroupFn: func(c CommodityBreakdown) string {
@@ -127,7 +130,7 @@ func GetAccountPortfolioAllocation(db *gorm.DB, account string) PortfolioAllocat
 			}}, cbs),
 		Industry: rollupPortfolioAggregate(PortfolioDimension{
 			FilterFn: func(c CommodityBreakdown, _ int) bool {
-				return c.SecurityType == "equity"
+				return strings.ToLower(c.SecurityType) == "equity"
 			},
 			Group: "Industry",
 			GroupFn: func(c CommodityBreakdown) string {
@@ -136,6 +139,18 @@ func GetAccountPortfolioAllocation(db *gorm.DB, account string) PortfolioAllocat
 			SubGroup: "Industry",
 			SubGroupFn: func(c CommodityBreakdown) string {
 				return orUnknown(c.SecurityIndustry)
+			}}, cbs),
+		Country: rollupPortfolioAggregate(PortfolioDimension{
+			FilterFn: func(c CommodityBreakdown, _ int) bool {
+				return true
+			},
+			Group: "Country",
+			GroupFn: func(c CommodityBreakdown) string {
+				return orUnknown(c.SecurityCountry)
+			},
+			SubGroup: "Country",
+			SubGroupFn: func(c CommodityBreakdown) string {
+				return orUnknown(c.SecurityCountry)
 			}}, cbs),
 	}
 }
@@ -153,7 +168,8 @@ func computePortfolioAggregate(db *gorm.DB, commodityName string, total decimal.
 			SecurityID:        p.SecurityID,
 			SecurityRating:    p.SecurityRating,
 			SecurityIndustry:  p.SecurityIndustry,
-			SecurityType:      p.SecurityType}
+			SecurityType:      p.SecurityType,
+			SecurityCountry:   p.SecurityCountry}
 	})
 }
 
@@ -172,7 +188,8 @@ func mergeBreakdowns(cbs []CommodityBreakdown) []CommodityBreakdown {
 			SecurityID:        strings.Join(lo.Map(bs, func(b CommodityBreakdown, _ int) string { return b.SecurityID }), ","),
 			SecurityRating:    bs[0].SecurityRating,
 			SecurityIndustry:  bs[0].SecurityIndustry,
-			SecurityType:      bs[0].SecurityType}
+			SecurityType:      bs[0].SecurityType,
+			SecurityCountry:   bs[0].SecurityCountry}
 	})
 }
 

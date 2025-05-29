@@ -27,6 +27,8 @@ require (
 	gorm.io/gorm v1.25.5
 )
 
+require github.com/szyhf/go-convert v1.0.0 // indirect
+
 require (
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/bytedance/sonic v1.10.2 // indirect
@@ -67,6 +69,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/szyhf/go-excel v1.6.0
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect

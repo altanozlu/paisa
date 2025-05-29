@@ -9,12 +9,14 @@ import (
 	"github.com/ananthakumaran/paisa/internal/model/cache"
 	"github.com/ananthakumaran/paisa/internal/model/cii"
 	"github.com/ananthakumaran/paisa/internal/model/commodity"
+	etfModel "github.com/ananthakumaran/paisa/internal/model/etf"
 	mutualfundModel "github.com/ananthakumaran/paisa/internal/model/mutualfund/scheme"
 	npsModel "github.com/ananthakumaran/paisa/internal/model/nps/scheme"
 	"github.com/ananthakumaran/paisa/internal/model/portfolio"
 	"github.com/ananthakumaran/paisa/internal/model/posting"
 	"github.com/ananthakumaran/paisa/internal/model/price"
 	"github.com/ananthakumaran/paisa/internal/scraper"
+	"github.com/ananthakumaran/paisa/internal/scraper/etf"
 	"github.com/ananthakumaran/paisa/internal/scraper/india"
 	"github.com/ananthakumaran/paisa/internal/scraper/mutualfund"
 	"github.com/samber/lo"
@@ -25,6 +27,7 @@ import (
 func AutoMigrate(db *gorm.DB) {
 	db.AutoMigrate(&npsModel.Scheme{})
 	db.AutoMigrate(&mutualfundModel.Scheme{})
+	db.AutoMigrate(&etfModel.ETFInformation{})
 	db.AutoMigrate(&posting.Posting{})
 	db.AutoMigrate(&price.Price{})
 	db.AutoMigrate(&portfolio.Portfolio{})
@@ -133,6 +136,21 @@ func SyncPortfolios(db *gorm.DB) error {
 		}
 
 		portfolio.UpsertAll(db, commodity.Type, commodity.Price.Code, portfolios)
+	}
+	commodities = commodity.FindByType(config.ETF)
+	for _, commodity := range commodities {
+		if commodity.Price.Provider == "justetf" {
+			name := commodity.Name
+			log.Info("Fetching portfolio for ", name)
+			portfolios, err := etf.GetJustETFPortfolio(db, commodity.Price.Code, commodity.Name)
+
+			if err != nil {
+				log.Error(err)
+				return fmt.Errorf("Failed to fetch portfolio for %s: %w", name, err)
+			}
+
+			portfolio.UpsertAll(db, commodity.Type, commodity.Price.Code, portfolios)
+		}
 	}
 	return nil
 }

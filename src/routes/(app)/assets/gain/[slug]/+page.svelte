@@ -29,12 +29,14 @@
   let name_and_security_type: PortfolioAggregate[] = [];
   let rating: PortfolioAggregate[] = [];
   let industry: PortfolioAggregate[] = [];
+  let country: PortfolioAggregate[] = [];
   let color: any;
 
   let securityTypeEmpty: boolean = false;
   let nameAndSecurityTypeEmpty: boolean = false;
   let ratingEmpty: boolean = false;
   let industryEmpty: boolean = false;
+  let countryEmpty: boolean = false;
 
   export let data: PageData;
   let gain: AccountGain;
@@ -48,6 +50,7 @@
   let securityTypeR: any,
     portfolioR: any,
     industryR: any,
+    countryR: any,
     ratingR: any = null;
 
   onDestroy(async () => {
@@ -58,7 +61,7 @@
     ({
       gain_timeline_breakdown: gain,
       asset_breakdown: assetBreakdown,
-      portfolio_allocation: { name_and_security_type, security_type, rating, industry, commodities }
+      portfolio_allocation: { name_and_security_type, security_type, rating, industry, commodities, country }
     } = await ajax("/api/gain/:name", null, data));
 
     overview = _.last(gain.networthTimeline);
@@ -92,6 +95,14 @@
         z: [genericBarColor()]
       }
     ));
+    ({ renderer: countryR } = renderPortfolioBreakdown(
+      "#d3-portfolio-security-country",
+      country,
+      {
+        small: true,
+        z: [genericBarColor()]
+      }
+    ));
     ({ renderer: portfolioR } = renderPortfolioBreakdown("#d3-portfolio", name_and_security_type, {
       small: true
     }));
@@ -104,12 +115,14 @@
     nameAndSecurityTypeEmpty = name_and_security_type.length === 0;
     ratingEmpty = rating.length === 0;
     industryEmpty = industry.length === 0;
+    countryEmpty = country.length === 0;
   });
 
   $: if (securityTypeR) {
     securityTypeR(filterCommodityBreakdowns(security_type, selectedCommodities), color);
     ratingR(filterCommodityBreakdowns(rating, selectedCommodities), color);
     industryR(filterCommodityBreakdowns(industry, selectedCommodities), color);
+    countryR(filterCommodityBreakdowns(country, selectedCommodities), color);
     portfolioR(filterCommodityBreakdowns(name_and_security_type, selectedCommodities), color);
   }
 </script>
@@ -243,6 +256,17 @@
                 <svg id="d3-portfolio-security-industry" width="100%" />
               </div>
               <BoxLabel text="Industry" />
+            </div>
+
+            <div class="mt-5" class:is-hidden={countryEmpty}>
+              <div class="box overflow-x-auto">
+                <div
+                  id="d3-portfolio-security-country-treemap"
+                  style="width: 100%; position: relative"
+                />
+                <svg id="d3-portfolio-security-country" width="100%" />
+              </div>
+              <BoxLabel text="Country" />
             </div>
           </div>
           <div class="column is-6 mt-5">

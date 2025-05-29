@@ -12,6 +12,7 @@
   let security_type: PortfolioAggregate[] = [];
   let name_and_security_type: PortfolioAggregate[] = [];
   let rating: PortfolioAggregate[] = [];
+  let country: PortfolioAggregate[] = [];
   let industry: PortfolioAggregate[] = [];
   let isEmpty = false;
   let color: any;
@@ -19,10 +20,11 @@
   let securityTypeR: any,
     portfolioR: any,
     industryR: any,
-    ratingR: any = null;
+    ratingR: any,
+    countryR: any = null;
 
   onMount(async () => {
-    ({ name_and_security_type, security_type, rating, industry, commodities } = await ajax(
+    ({ name_and_security_type, security_type, rating, industry, commodities, country } = await ajax(
       "/api/portfolio_allocation"
     ));
 
@@ -36,6 +38,7 @@
     selectedCommodities = [...commodities];
     securityTypeR = renderPortfolioBreakdown("#d3-portfolio-security-type", security_type);
     ratingR = renderPortfolioBreakdown("#d3-portfolio-security-rating", rating);
+    countryR = renderPortfolioBreakdown("#d3-portfolio-security-country", country);
     industryR = renderPortfolioBreakdown("#d3-portfolio-security-industry", industry, {
       z: [genericBarColor()]
     });
@@ -46,6 +49,7 @@
   $: if (securityTypeR) {
     securityTypeR.renderer(filterCommodityBreakdowns(security_type, selectedCommodities), color);
     ratingR.renderer(filterCommodityBreakdowns(rating, selectedCommodities), color);
+    countryR.renderer(filterCommodityBreakdowns(country, selectedCommodities), color);
     industryR.renderer(filterCommodityBreakdowns(industry, selectedCommodities), color);
     portfolioR.renderer(
       filterCommodityBreakdowns(name_and_security_type, selectedCommodities),
@@ -110,6 +114,17 @@
       </div>
     </div>
     <BoxLabel text="Security Rating" />
+
+    <div class="columns">
+      <div class="column is-12 has-text-centered">
+        <div class="box overflow-x-auto">
+          <div id="d3-portfolio-security-country-treemap" style="width: 100%; position: relative" />
+          <svg id="d3-portfolio-security-country" />
+        </div>
+      </div>
+    </div>
+    <BoxLabel text="Security Country" />
+
 
     <div class="columns">
       <div class="column is-12 has-text-centered">

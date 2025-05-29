@@ -17,6 +17,7 @@ type Portfolio struct {
 	SecurityRating    string               `json:"security_rating"`
 	SecurityIndustry  string               `json:"security_industry"`
 	Percentage        decimal.Decimal      `json:"percentage"`
+	SecurityCountry   string               `json:"security_country"`
 }
 
 func UpsertAll(db *gorm.DB, commodityType config.CommodityType, parentCommodityID string, portfolios []*Portfolio) {

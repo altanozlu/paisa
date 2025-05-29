@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"github.com/ananthakumaran/paisa/internal/model/price"
+	"github.com/ananthakumaran/paisa/internal/scraper/etf"
 	"github.com/ananthakumaran/paisa/internal/scraper/metal"
 	"github.com/ananthakumaran/paisa/internal/scraper/mutualfund"
 	"github.com/ananthakumaran/paisa/internal/scraper/nps"
@@ -11,6 +12,7 @@ import (
 
 func GetAllProviders() []price.PriceProvider {
 	return []price.PriceProvider{
+		&etf.JustEtfPriceProvider{},
 		&stock.YahooPriceProvider{},
 		&mutualfund.PriceProvider{},
 		&stock.AlphaVantagePriceProvider{},
@@ -24,6 +26,8 @@ func GetProviderByCode(code string) price.PriceProvider {
 	switch code {
 	case "in-mfapi":
 		return &mutualfund.PriceProvider{}
+	case "justetf":
+		return &etf.JustEtfPriceProvider{}
 	case "com-purifiedbytes-nps":
 		return &nps.PriceProvider{}
 	case "com-purifiedbytes-metal":

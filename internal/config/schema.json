@@ -970,7 +970,7 @@
           },
           "type": {
             "type": "string",
-            "enum": ["mutualfund", "stock", "nps", "metal", "unknown"]
+            "enum": ["mutualfund", "stock", "nps", "metal", "etf", "unknown"]
           },
           "price": {
             "type": "object",
@@ -983,7 +983,8 @@
                   "com-yahoo",
                   "com-purifiedbytes-nps",
                   "com-purifiedbytes-metal",
-                  "co-alphavantage"
+                  "co-alphavantage",
+                  "justetf"
                 ]
               },
               "code": {
