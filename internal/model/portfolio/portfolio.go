@@ -8,16 +8,17 @@ import (
 )
 
 type Portfolio struct {
-	ID                uint                 `gorm:"primaryKey" json:"id"`
-	CommodityType     config.CommodityType `json:"commodity_type"`
-	ParentCommodityID string               `json:"parent_commodity_id"`
-	SecurityID        string               `json:"security_id"`
-	SecurityName      string               `json:"security_name"`
-	SecurityType      string               `json:"security_type"`
-	SecurityRating    string               `json:"security_rating"`
-	SecurityIndustry  string               `json:"security_industry"`
-	Percentage        decimal.Decimal      `json:"percentage"`
-	SecurityCountry   string               `json:"security_country"`
+	ID                 uint                 `gorm:"primaryKey" json:"id"`
+	CommodityType      config.CommodityType `json:"commodity_type"`
+	ParentCommodityID  string               `json:"parent_commodity_id"`
+	SecurityID         string               `json:"security_id"`
+	SecurityName       string               `json:"security_name"`
+	SecurityType       string               `json:"security_type"`
+	SecurityRating     string               `json:"security_rating"`
+	SecurityIndustry   string               `json:"security_industry"`
+	Percentage         decimal.Decimal      `json:"percentage"`
+	SecurityCountry    string               `json:"security_country"`
+	PriceEarningsRatio decimal.Decimal      `json:"pe_ratio"`
 }
 
 func UpsertAll(db *gorm.DB, commodityType config.CommodityType, parentCommodityID string, portfolios []*Portfolio) {

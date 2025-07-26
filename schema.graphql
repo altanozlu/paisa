@@ -1,0 +1,126 @@
+type Etf {
+	isin: String!
+	name: String!
+	brand: Etfbrand!
+	currency: String!
+	exchange: String!
+	price: Float!
+	symbolName: String!
+	primarySymbolName: String!
+	countryCode: String!
+	holdings: [Etfholding!]!
+	priceEarningsRatio: Float
+}
+
+enum Etfbrand {
+	AMUNDI
+	XTRACKERS
+}
+
+interface Etfholding {
+	name: String!
+	weighting: Float!
+	country: String!
+}
+
+type EtfholdingBond implements Etfholding {
+	name: String!
+	isin: String!
+	weighting: Float!
+	quantity: Float!
+	currency: String!
+	country: String!
+}
+
+type EtfholdingCash implements Etfholding {
+	name: String!
+	country: String!
+	weighting: Float!
+	quantity: Float!
+	currency: String!
+}
+
+type EtfholdingCorporateBond implements Etfholding {
+	name: String!
+	isin: String!
+	weighting: Float!
+	quantity: Float!
+	currency: String!
+	country: String!
+}
+
+type EtfholdingEquity implements Etfholding {
+	name: String!
+	isin: String!
+	country: String!
+	industry: String!
+	weighting: Float!
+	quantity: Float!
+	currency: String!
+	stockInformation: Stock
+}
+
+type EtfholdingFuture implements Etfholding {
+	name: String!
+	isin: String!
+	country: String!
+	weighting: Float!
+	quantity: Float!
+	currency: String!
+}
+
+type EtfholdingMutualFund implements Etfholding {
+	name: String!
+	isin: String!
+	weighting: Float!
+	quantity: Float!
+	currency: String!
+	country: String!
+}
+
+type EtfholdingRight implements Etfholding {
+	name: String!
+	isin: String!
+	weighting: Float!
+	quantity: Float!
+	currency: String!
+	country: String!
+}
+
+input GetSymbolOptions {
+	currency: String
+	preferredExchange: String
+	text: String
+	symbolName: String
+}
+
+type Query {
+	getStockInformation(symbolName: String!): Stock
+	getStockInformationBySearch(options: GetSymbolOptions!): Stock
+	getStockInformationBySearchMultiple(options: [GetSymbolOptions!]!): [Stock]!
+	getEtfInformation(options: GetSymbolOptions!): Etf
+}
+
+type Stock {
+	currency: String!
+	epsBasicTtm: Float
+	exchange: String!
+	price: Float!
+	symbolName: String!
+	primarySymbolName: String!
+	countryCode: String!
+	primaryStock: Stock
+	priceEarningsRatio: Float
+}
+
+"""
+Directs the executor to include this field or fragment only when the `if` argument is true.
+"""
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Directs the executor to skip this field or fragment when the `if` argument is true.
+"""
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+schema {
+	query: Query
+}

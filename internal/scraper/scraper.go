@@ -12,7 +12,7 @@ import (
 
 func GetAllProviders() []price.PriceProvider {
 	return []price.PriceProvider{
-		&etf.JustEtfPriceProvider{},
+		&etf.BeursPriceProvider{},
 		&stock.YahooPriceProvider{},
 		&mutualfund.PriceProvider{},
 		&stock.AlphaVantagePriceProvider{},
@@ -26,8 +26,8 @@ func GetProviderByCode(code string) price.PriceProvider {
 	switch code {
 	case "in-mfapi":
 		return &mutualfund.PriceProvider{}
-	case "justetf":
-		return &etf.JustEtfPriceProvider{}
+	case "beurs":
+		return &etf.BeursPriceProvider{}
 	case "com-purifiedbytes-nps":
 		return &nps.PriceProvider{}
 	case "com-purifiedbytes-metal":

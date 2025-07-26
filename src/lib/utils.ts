@@ -200,6 +200,7 @@ export interface CommodityBreakdown {
   security_id: string;
   security_type: string;
   amount: number;
+  pe_ratio: number;
   percentage: number;
 }
 
@@ -216,6 +217,7 @@ export interface PortfolioAggregate {
   group: string;
   sub_group: string;
   amount: number;
+  pe_ratio: number;
   percentage: number;
   breakdowns: CommodityBreakdown[];
 }

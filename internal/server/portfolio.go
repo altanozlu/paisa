@@ -29,25 +29,27 @@ type PortfolioDimension struct {
 }
 
 type CommodityBreakdown struct {
-	ParentCommodityID string          `json:"parent_commodity_id"`
-	CommodityName     string          `json:"commodity_name"`
-	SecurityName      string          `json:"security_name"`
-	SecurityRating    string          `json:"security_rating"`
-	SecurityIndustry  string          `json:"security_industry"`
-	SecurityCountry   string          `json:"security_country"`
-	Percentage        decimal.Decimal `json:"percentage"`
-	SecurityID        string          `json:"security_id"`
-	SecurityType      string          `json:"security_type"`
-	Amount            decimal.Decimal `json:"amount"`
+	ParentCommodityID  string          `json:"parent_commodity_id"`
+	CommodityName      string          `json:"commodity_name"`
+	SecurityName       string          `json:"security_name"`
+	SecurityRating     string          `json:"security_rating"`
+	SecurityIndustry   string          `json:"security_industry"`
+	SecurityCountry    string          `json:"security_country"`
+	Percentage         decimal.Decimal `json:"percentage"`
+	SecurityID         string          `json:"security_id"`
+	SecurityType       string          `json:"security_type"`
+	Amount             decimal.Decimal `json:"amount"`
+	PriceEarningsRatio decimal.Decimal `json:"pe_ratio"`
 }
 
 type PortfolioAggregate struct {
-	Group      string               `json:"group"`
-	SubGroup   string               `json:"sub_group"`
-	ID         string               `json:"id"`
-	Percentage decimal.Decimal      `json:"percentage"`
-	Amount     decimal.Decimal      `json:"amount"`
-	Breakdowns []CommodityBreakdown `json:"breakdowns"`
+	Group              string               `json:"group"`
+	SubGroup           string               `json:"sub_group"`
+	ID                 string               `json:"id"`
+	Percentage         decimal.Decimal      `json:"percentage"`
+	Amount             decimal.Decimal      `json:"amount"`
+	Breakdowns         []CommodityBreakdown `json:"breakdowns"`
+	PriceEarningsRatio decimal.Decimal      `json:"pe_ratio"`
 }
 
 type PortfolioAllocationGroups struct {
@@ -161,15 +163,17 @@ func computePortfolioAggregate(db *gorm.DB, commodityName string, total decimal.
 	return lo.Map(portfolios, func(p portfolio.Portfolio, _ int) CommodityBreakdown {
 		amount := (total.Mul(p.Percentage)).Div(decimal.NewFromInt(100))
 		return CommodityBreakdown{
-			SecurityName:      p.SecurityName,
-			CommodityName:     commodity.Name,
-			ParentCommodityID: p.ParentCommodityID,
-			Amount:            amount,
-			SecurityID:        p.SecurityID,
-			SecurityRating:    p.SecurityRating,
-			SecurityIndustry:  p.SecurityIndustry,
-			SecurityType:      p.SecurityType,
-			SecurityCountry:   p.SecurityCountry}
+			SecurityName:       p.SecurityName,
+			CommodityName:      commodity.Name,
+			ParentCommodityID:  p.ParentCommodityID,
+			Amount:             amount,
+			SecurityID:         p.SecurityID,
+			SecurityRating:     p.SecurityRating,
+			SecurityIndustry:   p.SecurityIndustry,
+			SecurityType:       p.SecurityType,
+			SecurityCountry:    p.SecurityCountry,
+			PriceEarningsRatio: p.PriceEarningsRatio,
+		}
 	})
 }
 
@@ -181,15 +185,17 @@ func mergeBreakdowns(cbs []CommodityBreakdown) []CommodityBreakdown {
 	return lo.Map(lo.Keys(grouped), func(key string, _ int) CommodityBreakdown {
 		bs := grouped[key]
 		return CommodityBreakdown{
-			SecurityName:      bs[0].SecurityName,
-			CommodityName:     bs[0].CommodityName,
-			ParentCommodityID: bs[0].ParentCommodityID,
-			Amount:            utils.SumBy(bs, func(b CommodityBreakdown) decimal.Decimal { return b.Amount }),
-			SecurityID:        strings.Join(lo.Map(bs, func(b CommodityBreakdown, _ int) string { return b.SecurityID }), ","),
-			SecurityRating:    bs[0].SecurityRating,
-			SecurityIndustry:  bs[0].SecurityIndustry,
-			SecurityType:      bs[0].SecurityType,
-			SecurityCountry:   bs[0].SecurityCountry}
+			SecurityName:       bs[0].SecurityName,
+			CommodityName:      bs[0].CommodityName,
+			ParentCommodityID:  bs[0].ParentCommodityID,
+			Amount:             utils.SumBy(bs, func(b CommodityBreakdown) decimal.Decimal { return b.Amount }),
+			SecurityID:         strings.Join(lo.Map(bs, func(b CommodityBreakdown, _ int) string { return b.SecurityID }), ","),
+			SecurityRating:     bs[0].SecurityRating,
+			SecurityIndustry:   bs[0].SecurityIndustry,
+			SecurityType:       bs[0].SecurityType,
+			SecurityCountry:    bs[0].SecurityCountry,
+			PriceEarningsRatio: utils.SumBy(bs, func(b CommodityBreakdown) decimal.Decimal { return b.PriceEarningsRatio.Mul(b.Amount) }),
+		}
 	})
 }
 
@@ -207,7 +213,13 @@ func rollupPortfolioAggregate(dimension PortfolioDimension, cbs []CommodityBreak
 			return breakdown
 		})
 		totalPercentage := (portfolioTotal.Div(total)).Mul(decimal.NewFromInt(100))
-		return PortfolioAggregate{Group: dimension.GroupFn(breakdowns[0]), SubGroup: dimension.SubGroupFn(breakdowns[0]), ID: key, Amount: portfolioTotal, Percentage: totalPercentage, Breakdowns: breakdowns}
+		var peAvg decimal.Decimal
+		filteredForPE := lo.Filter(breakdowns, func(b CommodityBreakdown, _ int) bool { return !b.PriceEarningsRatio.IsZero() })
+		if len(filteredForPE) > 0 {
+			totalAmount := utils.SumBy(filteredForPE, func(b CommodityBreakdown) decimal.Decimal { return b.Amount })
+			peAvg = utils.SumBy(filteredForPE, func(b CommodityBreakdown) decimal.Decimal { return b.PriceEarningsRatio }).Div(totalAmount)
+		}
+		return PortfolioAggregate{Group: dimension.GroupFn(breakdowns[0]), SubGroup: dimension.SubGroupFn(breakdowns[0]), ID: key, Amount: portfolioTotal, Percentage: totalPercentage, Breakdowns: breakdowns, PriceEarningsRatio: peAvg}
 	})
 
 	sort.Slice(pas, func(i, j int) bool { return pas[i].Percentage.GreaterThan(pas[j].Percentage) })

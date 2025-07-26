@@ -1,0 +1,38 @@
+query Etf($options: GetSymbolOptions!) {
+  getEtfInformation(options: $options) {
+    isin
+    name
+    priceEarningsRatio
+    holdings {
+      __typename
+      name
+      weighting
+      country
+      ... on EtfholdingEquity {
+        isin
+        industry
+        stockInformation {
+          priceEarningsRatio
+        }
+      }
+      ... on EtfholdingMutualFund {
+        isin
+      }
+      ... on EtfholdingCorporateBond {
+        isin
+      }
+      ... on EtfholdingFuture {
+        isin
+      }
+      ... on EtfholdingBond {
+        isin
+      }
+      ... on EtfholdingCash {
+        currency
+      }
+      ... on EtfholdingRight {
+        isin
+      }
+    }
+  }
+}

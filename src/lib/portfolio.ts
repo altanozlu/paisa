@@ -70,7 +70,8 @@ export function renderPortfolioBreakdown(
 
   const targetWidth = small ? width - rem(190) : rem(500);
   const targetMargin = rem(20);
-  const textGroupWidth = rem(150);
+  const textGroupWidth = rem(225);
+  const tw3 = textGroupWidth / 3;
   const textGroupMargin = rem(20);
   const textGroupZero = targetWidth + targetMargin;
 
@@ -94,15 +95,23 @@ export function renderPortfolioBreakdown(
     .classed("svg-text-grey", true)
     .text("%")
     .attr("text-anchor", "end")
-    .attr("x", textGroupZero + textGroupWidth / 2)
+    .attr("x", textGroupZero + tw3)
     .attr("y", -5);
 
   g.append("text")
     .classed("svg-text-grey", true)
     .text("Amount")
     .attr("text-anchor", "end")
-    .attr("x", textGroupZero + textGroupWidth)
+    .attr("x", textGroupZero + tw3* 2)
     .attr("y", -5);
+
+  g.append("text")
+    .classed("svg-text-grey", true)
+    .text("P/E")
+    .attr("text-anchor", "end")
+    .attr("x", textGroupZero + tw3*3)
+    .attr("y", -5);
+
 
   const axisxg = g.append("g");
 
@@ -243,7 +252,7 @@ export function renderPortfolioBreakdown(
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "middle")
         .classed("svg-text-grey-dark", true)
-        .attr("x", textGroupZero + textGroupWidth / 2)
+        .attr("x", textGroupZero + tw3)
         .attr("y", (t) => y(t.id) + BAR_HEIGHT / 2);
 
       textGroupEnter
@@ -252,9 +261,18 @@ export function renderPortfolioBreakdown(
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "middle")
         .classed("svg-text-grey-dark", true)
-        .attr("x", textGroupZero + textGroupWidth)
+        .attr("x", textGroupZero + tw3 * 2)
         .attr("y", (t) => y(t.id) + BAR_HEIGHT / 2);
 
+      textGroupEnter
+        .append("text")
+        .text((t) => formatCurrency(t.pe_ratio))
+        .attr("text-anchor", "end")
+        .attr("dominant-baseline", "middle")
+        .classed("svg-text-grey-dark", true)
+        .attr("x", textGroupZero + tw3 * 3)
+        .attr("y", (t) => y(t.id) + BAR_HEIGHT / 2);
+        
       textGroup.exit().remove();
 
       if (!small) {
@@ -302,7 +320,8 @@ function renderPartition(
     security_type: "",
     percentage: 0,
     commodity_name: "root",
-    amount: pa.amount
+    amount: pa.amount,
+    pe_ratio: pa.pe_ratio
   };
 
   pa.breakdowns.unshift(rootBreakdown);
@@ -347,6 +366,7 @@ function renderPartition(
         ["Commodity", [breakdown.commodity_name, "has-text-right"]],
         ["Security Count", [breakdown.security_id.split(",").length.toString(), "has-text-right"]],
         ["Amount", [formatCurrency(breakdown.amount), "has-text-weight-bold has-text-right"]],
+        ["P/E Ratio", [formatCurrency(breakdown.pe_ratio), "has-text-weight-bold has-text-right"]],
         ["Percentage", [percent(d), "has-text-weight-bold has-text-right"]]
       ]);
     })

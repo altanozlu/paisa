@@ -139,10 +139,10 @@ func SyncPortfolios(db *gorm.DB) error {
 	}
 	commodities = commodity.FindByType(config.ETF)
 	for _, commodity := range commodities {
-		if commodity.Price.Provider == "justetf" {
+		if commodity.Price.Provider == "beurs" {
 			name := commodity.Name
 			log.Info("Fetching portfolio for ", name)
-			portfolios, err := etf.GetJustETFPortfolio(db, commodity.Price.Code, commodity.Name)
+			portfolios, err := etf.GetBeursPortfolio(db, commodity.Price.Code, commodity.Name)
 
 			if err != nil {
 				log.Error(err)
